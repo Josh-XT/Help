@@ -5,14 +5,17 @@
 # If it cannot reach the internal server, it will install the remote agent
 # The remote agent will be installed on all other machines.
 $osInfo = Get-CimInstance -ClassName Win32_OperatingSystem
-if($osInfo.ProductType -eq 3) {
-    if(Test-Connection $ENV:BLUESHIFT_INTERNAL_SERVER) {
+if($osInfo.ProductType -eq 3) { # If it is a server
+    if(Test-Connection $ENV:BLUESHIFT_INTERNAL_SERVER) { # If it can reach the internal server
         Write-Host "Blueshift local agent install."
         $server = $ENV:BLUESHIFT_INTERNAL_SERVER
-    } else {
+    } else { # 
         Write-Host "Blueshift remote agent install."
         $server = $ENV:BLUESHIFT_EXTERNAL_SERVER
     }
+} else {
+    Write-Host "Blueshift remote agent install."
+    $server = $ENV:BLUESHIFT_EXTERNAL_SERVER
 }
 New-NetFirewallRule -DisplayName "Wazuh Agent" -Direction outbound -Profile Any -Action Allow -LocalPort 1514,1515 -Protocol TCP
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
